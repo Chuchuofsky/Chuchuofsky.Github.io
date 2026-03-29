@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>月抛模拟器（男版）</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: #eeeeee;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .game-container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: #16213e;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #0f3460;
+        }
+        
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff6b9d;
+            margin-bottom: 5px;
+            background: linear-gradient(45deg, #ff6b9d, #9d4edd);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            font-size: 14px;
+            color: #a9a9a9;
+            font-style: italic;
+            line-height: 1.6;
+        }
+        
+        .author {
+            font-size: 12px;
+            color: #6c5ce7;
+            margin-top: 8px;
+        }
+        
+        .round-indicator {
+            font-size: 18px;
+            font-weight: bold;
+            color: #eeeeee;
+            margin-top: 10px;
+        }
+        
+        .stats-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .stat-card {
+            flex: 1;
+            background: #0f3460;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        
+        .urge-stat .stat-icon {
+            color: #ff4757;
+        }
+        
+        .anxiety-stat .stat-icon {
+            color: #6c5ce7;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        
+        .urge-stat .stat-label {
+            color: #ff4757;
+        }
+        
+        .anxiety-stat .stat-label {
+            color: #6c5ce7;
+        }
+        
+        .stat-value {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: #0f3460;
+            border-radius: 4px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .urge-progress {
+            background: #ff4757;
+        }
+        
+        .anxiety-progress {
+            background: #6c5ce7;
+        }
+        
+        .danger-zone {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 0, 0, 0.1);
+            pointer-events: none;
+            display: none;
+        }
+        
+        .critical-zone {
+            position: absolute;
+            top: 0;
+            left: 80%;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 0, 0, 0.3);
+            pointer-events: none;
+            display: none;
+        }
+        
+        .event-log {
+            background: #0f3460;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            min-height: 80px;
+            max-height: 120px;
+            overflow-y: auto;
+        }
+        
+        .event-item {
+            font-size: 13px;
+            margin-bottom: 8px;
+            padding: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+        }
+        
+        .event-positive {
+            color: #00b894;
+        }
+        
+        .event-negative {
+            color: #ff7675;
+        }
+        
+        .event-neutral {
+            color: #a9a9a9;
+        }
+        
+        .event-warning {
+            color: #fdcb6e;
+            font-weight: bold;
+        }
+        
+        .partner-section {
+            background: #0f3460;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        
+        .partner-avatar {
+            width: 80px;
+            height: 80px;
+            background: #ff9ff3;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            transition: all 0.3s ease;
+        }
+        
+        .partner-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #eeeeee;
+            margin-bottom: 10px;
+        }
+        
+        .partner-quote {
+            font-style: italic;
+            color: #a29bfe;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .tag {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .tag-gray {
+            background: #636e72;
+            color: white;
+        }
+        
+        .tag-orange {
+            background: #fdcb6e;
+            color: #2d3436;
+        }
+        
+        .tag-purple {
+            background: #6c5ce7;
+            color: white;
+        }
+        
+        .tag-green {
+            background: #00b894;
+            color: white;
+        }
+        
+        .tag-red {
+            background: #ff4757;
+            color: white;
+        }
+        
+        .tag-yellow {
+            background: #f1c40f;
+            color: #2d3436;
+        }
+        
+        .tag-blue {
+            background: #3498db;
+            color: white;
+        }
+        
+        .tag-pink {
+            background: #e84393;
+            color: white;
+        }
+        
+        .tag-teal {
+            background: #1abc9c;
+            color: white;
+        }
+        
+        .actions-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+        
+        .action-btn {
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-purple {
+            background: #6c5ce7;
+            color: white;
+        }
+        
+        .btn-gray {
+            background: #636e72;
+            color: white;
+        }
+        
+        .btn-green {
+            background: #00b894;
+            color: white;
+        }
+        
+        .btn-brown {
+            background: #d63031;
+            color: white;
+        }
+        
+        .btn-red {
+            background: #e17055;
+            color: white;
+        }
+        
+        .btn-blue {
+            background: #0984e3;
+            color: white;
+        }
+        
+        .btn-yellow {
+            background: #fdcb6e;
+            color: #2d3436;
+        }
+        
+        .btn-effect {
+            font-size: 11px;
+            opacity: 0.8;
+            margin-top: 4px;
+            display: block;
+        }
+        
+        .main-action {
+            width: 100%;
+            padding: 15px;
+            background: #6c5ce7;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        
+        .pulse {
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .flash {
+            animation: flash 0.3s ease-in-out;
+        }
+        
+        @keyframes flash {
+            0%, 100% { background-color: inherit; }
+            50% { background-color: rgba(255,255,255,0.3); }
+        }
+        
+        .warning-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 20px;
+            z-index: 1000;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            display: none;
+            color: #856404;
+        }
+        
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+        
+        /* 弹窗样式 */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .modal-content {
+            background: #16213e;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+        
+        .modal-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #ff6b9d;
+        }
+        
+        .modal-text {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            color: #eeeeee;
+        }
+        
+        .modal-btn {
+            padding: 10px 20px;
+            background: #6c5ce7;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        .modal-result {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 15px 0;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .result-positive {
+            background: rgba(0, 184, 148, 0.2);
+            color: #00b894;
+            border: 1px solid #00b894;
+        }
+        
+        .result-negative {
+            background: rgba(255, 71, 87, 0.2);
+            color: #ff4757;
+            border: 1px solid #ff4757;
+        }
+        
+        /* 游戏结束界面 */
+        .game-over-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+            display: none;
+        }
+        
+        .game-over-card {
+            background: #16213e;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            width: 95%;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        
+        .game-over-header {
+            margin-bottom: 25px;
+        }
+        
+        .rose-icon {
+            font-size: 48px;
+            color: #ff4757;
+            margin-bottom: 15px;
+        }
+        
+        .game-over-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #ff6b9d;
+            margin-bottom: 20px;
+        }
+        
+        .game-over-story {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #eeeeee;
+            margin-bottom: 30px;
+            text-align: left;
+            padding: 0 20px;
+        }
+        
+        .results-section {
+            background: #0f3460;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+            text-align: left;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #a9a9a9;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            background: rgba(255,255,255,0.05);
+        }
+        
+        .result-item.highlight {
+            background: rgba(255, 71, 87, 0.2);
+            border: 1px solid #ff4757;
+        }
+        
+        .result-icon {
+            font-size: 18px;
+            margin-right: 10px;
+        }
+        
+        .result-label {
+            flex: 1;
+            text-align: left;
+            font-size: 14px;
+        }
+        
+        .result-value {
+            font-weight: bold;
+            font-size: 16px;
+            color: #ff6b9d;
+        }
+        
+        .behavior-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+        
+        .behavior-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .behavior-card.purple { background: rgba(108, 92, 231, 0.2); }
+        .behavior-card.orange { background: rgba(253, 203, 110, 0.2); color: #2d3436; }
+        .behavior-card.teal { background: rgba(26, 188, 156, 0.2); }
+        .behavior-card.gray { background: rgba(99, 110, 114, 0.2); }
+        
+        .behavior-label {
+            font-size: 12px;
+            margin-bottom: 8px;
+            color: #a9a9a9;
+        }
+        
+        .behavior-value {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        
+        .final-stats {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 20px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .final-stat-item {
+            text-align: center;
+        }
+        
+        .final-stat-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        
+        .final-stat-value {
+            font-size: 22px;
+            font-weight: bold;
+            color: #ff6b9d;
+        }
+        
+        .final-stat-label {
+            font-size: 12px;
+            color: #a9a9a9;
+        }
+        
+        .achievements-section {
+            background: #0f3460;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 25px 0;
+            text-align: center;
+        }
+        
+        .achievement-badge {
+            display: inline-block;
+            padding: 8px 15px;
+            background: #fdcb6e;
+            color: #2d3436;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            margin: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .no-achievements {
+            color: #a9a9a9;
+            font-style: italic;
+        }
+        
+        .game-over-buttons {
+            margin-top: 25px;
+        }
+        
+        .game-over-btn {
+            padding: 12px 25px;
+            background: #6c5ce7;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            margin: 0 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <div class="title">月抛模拟器（男版）</div>
+            <div class="subtitle">我之前看到一个月抛模拟器，可惜主视角是女生，缺乏一点代入感，所以写了一个主视角为男性的模拟器</div>
+            <div class="author">创作者：Chuchuofsky</div>
+            <div class="round-indicator">第 <span id="round-num">1</span> 回合</div>
+        </div>
+        
+        <div class="stats-container">
+            <div class="stat-card urge-stat">
+                <div class="stat-icon">🔥</div>
+                <div class="stat-label">生理压抑</div>
+                <div class="stat-value"><span id="urge-value">50</span>%</div>
+                <div class="progress-bar">
+                    <div class="progress-fill urge-progress" id="urge-progress" style="width: 50%"></div>
+                </div>
+                <div class="danger-zone" id="urge-danger"></div>
+                <div class="critical-zone" id="urge-critical"></div>
+            </div>
+            
+            <div class="stat-card anxiety-stat">
+                <div class="stat-icon">🧠</div>
+                <div class="stat-label">心理压力</div>
+                <div class="stat-value"><span id="anxiety-value">0</span>%</div>
+                <div class="progress-bar">
+                    <div class="progress-fill anxiety-progress" id="anxiety-progress" style="width: 0%"></div>
+                </div>
+                <div class="danger-zone" id="anxiety-danger"></div>
+                <div class="critical-zone" id="anxiety-critical"></div>
+            </div>
+        </div>
+        
+        <div class="event-log" id="event-log">
+            <div class="event-item event-neutral">游戏开始，你需要在生理需求和心理压力之间找到平衡...</div>
+        </div>
+        
+        <div class="partner-section">
+            <div class="partner-avatar" id="partner-avatar">👩</div>
+            <div class="partner-name" id="partner-name">性感女神</div>
+            <div class="partner-quote" id="partner-quote">'宝贝，今晚让我好好疼爱你...'</div>
+            
+            <div class="tags-container" id="partner-tags">
+                <div class="tag tag-gray">隐藏标签</div>
+                <div class="tag tag-purple">👠 夜店DJ</div>
+                <div class="tag tag-pink">💝 温柔体贴</div>
+                <div class="tag tag-blue">💊 长期服药</div>
+                <div class="tag tag-green">💚 表面健康</div>
+            </div>
+        </div>
+        
+        <div class="actions-grid">
+            <button class="action-btn btn-gray" onclick="useTestStrip()">
+                对方试纸 x<span id="test-strip-count">2</span>
+                <span class="btn-effect">检测对方是否有性病</span>
+            </button>
+            <button class="action-btn btn-purple" onclick="goToHospital()">
+                去医院检查
+                <span class="btn-effect">检查自己是否感染</span>
+            </button>
+        </div>
+        
+        <button class="main-action" onclick="chatWithPartner()">
+            💬 试探 / 聊天 (压抑值+3)
+        </button>
+        
+        <div class="actions-grid">
+            <button class="action-btn btn-gray" id="condom-oral-btn" onclick="chooseAction('condomOral')">
+                戴套口交
+                <span class="btn-effect">压抑-2 | 压力+2</span>
+            </button>
+            <button class="action-btn btn-green" id="condom-sex-btn" onclick="chooseAction('condomSex')">
+                戴套性交
+                <span class="btn-effect">压抑-6 | 压力+5</span>
+            </button>
+            <button class="action-btn btn-brown" id="unprotected-oral-btn" onclick="chooseAction('unprotectedOral')">
+                无套口交
+                <span class="btn-effect">压抑-10 | 压力+2</span>
+            </button>
+            <button class="action-btn btn-red" id="unprotected-sex-btn" onclick="chooseAction('unprotectedSex')">
+                无套性交
+                <span class="btn-effect">压抑-15 | 压力+30</span>
+            </button>
+        </div>
+        
+        <button class="action-btn btn-gray" style="width: 100%" onclick="changePartner()">
+            👋 换一个 (压抑值+8)
+        </button>
+    </div>
+
+    <!-- 警告弹窗 -->
+    <div class="overlay" id="overlay"></div>
+    <div class="warning-popup" id="warning-popup">
+        <div>⚠️ 你的压力过大，需要释放</div>
+    </div>
+
+    <!-- 试纸检测弹窗 -->
+    <div class="modal" id="test-modal">
+        <div class="modal-content">
+            <div class="modal-title">试纸检测结果</div>
+            <div class="modal-result" id="test-result"></div>
+            <div class="modal-text" id="test-message"></div>
+            <button class="modal-btn" onclick="closeTestModal()">确定</button>
+        </div>
+    </div>
+
+    <!-- 医院检查弹窗 -->
+    <div class="modal" id="hospital-modal">
+        <div class="modal-content">
+            <div class="modal-title">医院检查结果</div>
+            <div class="modal-result" id="hospital-result"></div>
+            <div class="modal-text" id="hospital-message"></div>
+            <button class="modal-btn" onclick="closeHospitalModal()">确定</button>
+        </div>
+    </div>
+
+    <!-- 游戏结束界面 -->
+    <div class="game-over-screen" id="game-over-screen">
+        <div class="game-over-card">
+            <div class="game-over-header">
+                <div class="rose-icon">🌹</div>
+                <div class="game-over-title" id="game-over-title">糟糕的胜利</div>
+                <div class="game-over-story" id="game-over-story"></div>
+            </div>
+            
+            <div class="results-section">
+                <div class="section-title">生涯结果</div>
+                <div id="career-results"></div>
+            </div>
+            
+            <div class="results-section">
+                <div class="section-title">行为统计 (次数)</div>
+                <div class="behavior-stats" id="behavior-stats"></div>
+            </div>
+            
+            <div class="achievements-section">
+                <div class="section-title">获得成就</div>
+                <div id="achievements-display"></div>
+            </div>
+            
+            <div class="final-stats">
+                <div class="final-stat-item">
+                    <div class="final-stat-icon">⏱️</div>
+                    <div class="final-stat-value" id="final-rounds">0</div>
+                    <div class="final-stat-label">存活回合</div>
+                </div>
+                <div class="final-stat-item">
+                    <div class="final-stat-icon">🔥</div>
+                    <div class="final-stat-value" id="final-urge">50</div>
+                    <div class="final-stat-label">最终压抑</div>
+                </div>
+                <div class="final-stat-item">
+                    <div class="final-stat-icon">🧠</div>
+                    <div class="final-stat-value" id="final-stress">0</div>
+                    <div class="final-stat-label">最终压力</div>
+                </div>
+            </div>
+            
+            <div class="game-over-buttons">
+                <button class="game-over-btn" onclick="restartGame()">重新开始</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 游戏状态
+        let gameState = {
+            round: 1,
+            physiologicalUrge: 50,
+            psychologicalStress: 0,
+            testStrips: 2,
+            gameOver: false,
+            achievements: [],
+            totalSexActs: 0,
+            healthySex: 0,
+            infectedSex: 0,
+            hasSTD: false,
+            infectionRound: 0,
+            stdDetected: false,
+            condomOral: 0,
+            condomSex: 0,
+            unprotectedOral: 0,
+            unprotectedSex: 0,
+            rejected: 0,
+            survived: 0,
+            missed: 0
+        };
+        
+        // 成就系统
+        const achievements = [
+            { id: 'first_step', name: '第一步', condition: () => gameState.round >= 2, desc: '完成第一回合' },
+            { id: 'balanced_life', name: '平衡大师', condition: () => gameState.physiologicalUrge < 70 && gameState.psychologicalStress < 50 && gameState.round >= 5, desc: '保持低压抑低压力状态5回合' },
+            { id: 'risk_taker', name: '冒险家', condition: () => gameState.infectedSex >= 1 && gameState.stdDetected, desc: '与感染者发生过关系' },
+            { id: 'safe_player', name: '安全第一', condition: () => gameState.healthySex >= 3, desc: '与健康人群发生3次关系' },
+            { id: 'survivor', name: '生存者', condition: () => gameState.round >= 10, desc: '存活10回合' },
+            { id: 'lucky_guy', name: '幸运儿', condition: () => !gameState.hasSTD && gameState.round >= 8, desc: '长时间未感染' },
+            { id: 'detective', name: '侦探', condition: () => gameState.testStrips === 0, desc: '用完所有试纸' }
+        ];
+        
+        // 隐藏标签的真实内容
+        const hiddenRealTags = [
+            '内裤有黄色粘液', '下体有异味', '私处瘙痒不止', '分泌物呈绿色',
+            '尿道口红肿', '生殖器有小疙瘩', '性交后出血', '经常感到疲惫',
+            '体温略微偏高', '淋巴结肿大', '皮肤出现皮疹', '关节疼痛'
+        ];
+        
+        const healthyTags = [
+            '表面看起来很健康', '体检报告显示正常', '气色很好',
+            '精力充沛的样子', '身体健康指标优秀', '看起来状态不错'
+        ];
+        
+        const professions = [
+            '👠 夜店DJ', '🏢 白领OL', '📚 大学生', '🍷 高级会所',
+            '💪 健身房教练', '📱 网络主播', '🏥 护士', '💎 富家千金'
+        ];
+        
+        const personality = [
+            '💝 温柔体贴', '🔥 热情奔放', '❄️ 冷漠疏离', '🎭 戏精本精',
+            '👑 高冷女王', '🧸 软萌可爱', '⚔️ 御姐范儿', '🌸 清纯可人'
+        ];
+        
+        const lifestyle = [
+            '💊 长期服用药物', '💉 定期体检', '🌡️ 体温偏高', '📉 免疫力较低',
+            '📈 性欲比较旺盛', '📉 性冷淡倾向', '🔄 交往对象较多', '单身状态'
+        ];
+        
+        const restrictions = [
+            '🚫 对乳胶过敏', '🚫 拒绝无套', '⚠️ 只接受特定方式',
+            '🔒 要求双重保护', '🔐 坚持全程戴套', '📛 不喜欢口交'
+        ];
+        
+        const temptingQuotes = [
+            "'宝贝，今晚让我好好疼爱你...'", "'这么久没见，想不想尝尝我的新花样？'",
+            "'加班这么晚，要不要去我家休息一下？'", "'学长，我一个人在家好无聊哦...'"
+        ];
+        
+        const sexMessages = [
+            '激情的一夜让人难忘...', '火热的缠绵让时间静止...',
+            '销魂的时刻值得回味...', '疯狂的夜晚释放了所有...'
+        ];
+        
+        const endingStories = {
+            std_death: "你的压抑值清零了，你感到无比轻松...\n但在几天后，你的身体开始出现异常反应。\n你虽然释放了欲望，却输掉了健康。",
+            urge_overload: "你完全被生理冲动支配，失去了理智和判断力...\n欲望的洪流吞没了你的最后一丝理智。",
+            stress_breakdown: "巨大的心理压力让你精神崩溃...\n再也无法承受生活的重担，世界变得灰暗无光。",
+            secret_success: "经过谨慎的选择和自我调节...\n你找到了内心的平衡，学会了健康处理各种关系。",
+            std_detected: "医院检查确认你已经感染性病...\n需要立即接受治疗，但为时已晚。"
+        };
+        
+        // 合作伙伴数据生成函数
+        function generatePartners() {
+            const names = ['性感女神', '办公室丽人', '清纯学妹', '成熟御姐', '健身教练', '网红主播', '温柔护士', '神秘贵妇'];
+            const avatars = ['👩', '👩‍💼', '👩‍🎓', '👩‍❤️‍💋‍👨', '👩‍🦾', '👩‍💻', '👩‍⚕️', '👩‍🦳'];
+            
+            return names.map((name, index) => {
+                const hasSTD = Math.random() < 0.7;
+                const hiddenTagIndex = Math.floor(Math.random() * hiddenRealTags.length);
+                
+                const tags = [
+                    '隐藏标签', // 统一初始显示
+                    professions[Math.floor(Math.random() * professions.length)],
+                    personality[Math.floor(Math.random() * personality.length)],
+                    lifestyle[Math.floor(Math.random() * lifestyle.length)],
+                    hasSTD ? '⚠️ 健康状况可疑' : healthyTags[Math.floor(Math.random() * healthyTags.length)]
+                ];
+                
+                if (Math.random() < 0.4) {
+                    tags.push(restrictions[Math.floor(Math.random() * restrictions.length)]);
+                }
+                
+                return {
+                    name: name,
+                    avatar: avatars[index],
+                    quote: temptingQuotes[Math.floor(Math.random() * temptingQuotes.length)],
+                    tags: tags,
+                    hasSTD: hasSTD,
+                    hiddenIndex: hiddenTagIndex,
+                    revealed: false
+                };
+            });
+        }
+        
+        let partners = generatePartners();
+        let currentPartner = 0;
+        
+        // 检查成就
+        function checkAchievements() {
+            achievements.forEach(ach => {
+                if (!gameState.achievements.includes(ach.id) && ach.condition()) {
+                    gameState.achievements.push(ach.id);
+                    if (ach.id !== 'risk_taker') {
+                        addEvent(`🏆 获得成就：${ach.name} - ${ach.desc}`, 'positive');
+                    }
+                }
+            });
+        }
+        
+        // 添加事件到日志
+        function addEvent(message, type = 'neutral') {
+            const eventLog = document.getElementById('event-log');
+            const eventItem = document.createElement('div');
+            eventItem.className = `event-item event-${type}`;
+            eventItem.textContent = `[第${gameState.round}回合] ${message}`;
+            eventLog.appendChild(eventItem);
+            eventLog.scrollTop = eventLog.scrollHeight;
+            
+            if (eventLog.children.length > 8) {
+                eventLog.removeChild(eventLog.firstChild);
+            }
+        }
+        
+        // 更新按钮状态
+        function updateButtonStates() {
+            const partner = partners[currentPartner];
+            const hasLatexAllergy = partner.tags.some(tag => tag.includes('对乳胶过敏'));
+            const refusesUnprotected = partner.tags.some(tag => tag.includes('拒绝无套'));
+            
+            document.getElementById('condom-oral-btn').disabled = hasLatexAllergy;
+            document.getElementById('condom-sex-btn').disabled = hasLatexAllergy;
+            document.getElementById('unprotected-oral-btn').disabled = refusesUnprotected;
+            document.getElementById('unprotected-sex-btn').disabled = refusesUnprotected;
+        }
+        
+        // 更新显示
+        function updateDisplay() {
+            document.getElementById('round-num').textContent = gameState.round;
+            document.getElementById('urge-value').textContent = gameState.physiologicalUrge;
+            document.getElementById('anxiety-value').textContent = gameState.psychologicalStress;
+            document.getElementById('urge-progress').style.width = gameState.physiologicalUrge + '%';
+            document.getElementById('anxiety-progress').style.width = gameState.psychologicalStress + '%';
+            document.getElementById('test-strip-count').textContent = gameState.testStrips;
+            
+            document.getElementById('urge-danger').style.display = gameState.physiologicalUrge >= 70 ? 'block' : 'none';
+            document.getElementById('urge-critical').style.display = gameState.physiologicalUrge >= 90 ? 'block' : 'none';
+            document.getElementById('anxiety-danger').style.display = gameState.psychologicalStress >= 60 ? 'block' : 'none';
+            document.getElementById('anxiety-critical').style.display = gameState.psychologicalStress >= 80 ? 'block' : 'none';
+            
+            const partner = partners[currentPartner];
+            document.getElementById('partner-avatar').textContent = partner.avatar;
+            document.getElementById('partner-name').textContent = partner.name;
+            document.getElementById('partner-quote').textContent = partner.quote;
+            
+            const tagsContainer = document.getElementById('partner-tags');
+            tagsContainer.innerHTML = '';
+            partner.tags.forEach(tagText => {
+                let tagClass = 'tag-gray';
+                if (tagText === '隐藏标签') tagClass = 'tag-gray';
+                else if (tagText.includes('健康') || tagText.includes('正常')) tagClass = 'tag-green';
+                else if (tagText.includes('可疑') || tagText.includes('异常')) tagClass = 'tag-red';
+                else if (tagText.includes('职业')) tagClass = 'tag-blue';
+                else if (tagText.includes('限制') || tagText.includes('拒绝')) tagClass = 'tag-orange';
+                else if (tagText.includes('个性')) tagClass = 'tag-purple';
+                else if (tagText.includes('生活')) tagClass = 'tag-yellow';
+                else tagClass = 'tag-teal';
+                
+                const tag = document.createElement('div');
+                tag.className = `tag ${tagClass}`;
+                tag.textContent = tagText;
+                tagsContainer.appendChild(tag);
+            });
+            
+            updateButtonStates();
+            checkAchievements();
+            
+            if (gameState.psychologicalStress >= 80 && gameState.psychologicalStress < 100) {
+                showWarning();
+            }
+            
+            if (gameState.hasSTD && gameState.round - gameState.infectionRound >= 5) {
+                endGame('结局：无知死亡', endingStories.std_death, 'failure');
+            }
+            
+            checkGameOver();
+        }
+        
+        // 显示警告
+        function showWarning() {
+            const popup = document.getElementById('warning-popup');
+            const overlay = document.getElementById('overlay');
+            
+            popup.style.display = 'block';
+            overlay.style.display = 'block';
+            document.querySelector('.game-container').classList.add('shake');
+            
+            setTimeout(() => {
+                popup.style.display = 'none';
+                overlay.style.display = 'none';
+                document.querySelector('.game-container').classList.remove('shake');
+            }, 3000);
+        }
+        
+        // 检查游戏结束
+        function checkGameOver() {
+            if (gameState.gameOver) return;
+            
+            if (gameState.physiologicalUrge >= 100) {
+                endGame('结局：欲望失控', endingStories.urge_overload, 'failure');
+            } else if (gameState.psychologicalStress >= 100) {
+                endGame('结局：精神崩溃', endingStories.stress_breakdown, 'failure');
+            } else if (gameState.round >= 15 && gameState.physiologicalUrge < 60 && gameState.psychologicalStress < 40 && !gameState.hasSTD) {
+                endGame('秘密结局：内心平静', endingStories.secret_success, 'success');
+            }
+        }
+        
+        // 结束游戏 - 整合成就显示
+        function endGame(title, story, type = 'neutral') {
+            gameState.gameOver = true;
+            
+            document.getElementById('game-over-title').textContent = title;
+            document.getElementById('game-over-story').textContent = story;
+            
+            // 更新生涯结果
+            const careerResults = document.getElementById('career-results');
+            careerResults.innerHTML = `
+                <div class="result-item">
+                    <span class="result-icon">🟢</span>
+                    <span class="result-label">理智享受</span>
+                    <span class="result-value">${gameState.healthySex}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-icon">🔒</span>
+                    <span class="result-label">正确离开</span>
+                    <span class="result-value">${gameState.rejected}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-icon">😬</span>
+                    <span class="result-label">死里逃生</span>
+                    <span class="result-value">${gameState.survived}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-icon">🤝</span>
+                    <span class="result-label">遗憾错过</span>
+                    <span class="result-value">${gameState.missed}</span>
+                </div>
+                <div class="result-item highlight">
+                    <span class="result-icon">💀</span>
+                    <span class="result-label">被感染次数</span>
+                    <span class="result-value">${gameState.infectedSex}</span>
+                </div>
+            `;
+            
+            // 更新行为统计
+            const behaviorStats = document.getElementById('behavior-stats');
+            behaviorStats.innerHTML = `
+                <div class="behavior-card purple">
+                    <div class="behavior-label">无套性交</div>
+                    <div class="behavior-value">${gameState.unprotectedSex}</div>
+                </div>
+                <div class="behavior-card orange">
+                    <div class="behavior-label">无套口交</div>
+                    <div class="behavior-value">${gameState.unprotectedOral}</div>
+                </div>
+                <div class="behavior-card teal">
+                    <div class="behavior-label">戴套性交</div>
+                    <div class="behavior-value">${gameState.condomSex}</div>
+                </div>
+                <div class="behavior-card gray">
+                    <div class="behavior-label">戴套口交</div>
+                    <div class="behavior-value">${gameState.condomOral}</div>
+                </div>
+                <div class="behavior-card gray" style="grid-column: span 2;">
+                    <div class="behavior-label">🖐️ 拒绝/离开</div>
+                    <div class="behavior-value">${gameState.rejected}</div>
+                </div>
+            `;
+            
+            // 更新成就显示（直接在结算画面展示）
+            const achievementsDisplay = document.getElementById('achievements-display');
+            if (gameState.achievements.length > 0) {
+                let achievementsHTML = '';
+                gameState.achievements.forEach(achId => {
+                    const ach = achievements.find(a => a.id === achId);
+                    if (ach) {
+                        achievementsHTML += `<span class="achievement-badge">${ach.name}</span>`;
+                    }
+                });
+                achievementsDisplay.innerHTML = achievementsHTML;
+            } else {
+                achievementsDisplay.innerHTML = '<div class="no-achievements">暂无成就</div>';
+            }
+            
+            // 更新最终统计
+            document.getElementById('final-rounds').textContent = gameState.round;
+            document.getElementById('final-urge').textContent = gameState.physiologicalUrge;
+            document.getElementById('final-stress').textContent = gameState.psychologicalStress;
+            
+            document.getElementById('game-over-screen').style.display = 'flex';
+        }
+        
+        // 重新开始游戏
+        function restartGame() {
+            gameState = {
+                round: 1,
+                physiologicalUrge: 50,
+                psychologicalStress: 0,
+                testStrips: 2,
+                gameOver: false,
+                achievements: [],
+                totalSexActs: 0,
+                healthySex: 0,
+                infectedSex: 0,
+                hasSTD: false,
+                infectionRound: 0,
+                stdDetected: false,
+                condomOral: 0,
+                condomSex: 0,
+                unprotectedOral: 0,
+                unprotectedSex: 0,
+                rejected: 0,
+                survived: 0,
+                missed: 0
+            };
+            partners = generatePartners();
+            currentPartner = 0;
+            document.getElementById('game-over-screen').style.display = 'none';
+            addEvent('游戏重新开始，新的挑战开始了...', 'neutral');
+            updateDisplay();
+        }
+        
+        // 使用试纸
+        function useTestStrip() {
+            if (gameState.gameOver || gameState.testStrips <= 0) return;
+            
+            gameState.testStrips--;
+            const partner = partners[currentPartner];
+            const modal = document.getElementById('test-modal');
+            const resultEl = document.getElementById('test-result');
+            const messageEl = document.getElementById('test-message');
+            
+            if (partner.hasSTD) {
+                resultEl.textContent = '⚠️ 阳性';
+                resultEl.className = 'modal-result result-negative';
+                messageEl.textContent = '检测结果显示对方携带性病风险！';
+                addEvent('⚠️ 试纸检测出对方携带性病！', 'negative');
+            } else {
+                resultEl.textContent = '✅ 阴性';
+                resultEl.className = 'modal-result result-positive';
+                messageEl.textContent = '检测结果显示对方身体健康';
+                addEvent('✅ 试纸显示对方身体健康', 'positive');
+            }
+            
+            modal.style.display = 'flex';
+            gameState.round++;
+        }
+        
+        function closeTestModal() {
+            document.getElementById('test-modal').style.display = 'none';
+            updateDisplay();
+        }
+        
+        // 去医院检查
+        function goToHospital() {
+            if (gameState.gameOver) return;
+            
+            const modal = document.getElementById('hospital-modal');
+            const resultEl = document.getElementById('hospital-result');
+            const messageEl = document.getElementById('hospital-message');
+            
+            if (gameState.hasSTD) {
+                resultEl.textContent = '⚠️ 检测阳性';
+                resultEl.className = 'modal-result result-negative';
+                messageEl.textContent = '医院检查确认你已经感染性病！';
+                gameState.stdDetected = true;
+                setTimeout(() => {
+                    endGame('结局：确诊感染', endingStories.std_detected, 'failure');
+                }, 2000);
+            } else {
+                resultEl.textContent = '✅ 检测阴性';
+                resultEl.className = 'modal-result result-positive';
+                messageEl.textContent = '医院检查显示身体健康，压力值已清空';
+                gameState.psychologicalStress = 0;
+                addEvent('🏥 医院检查显示身体健康，压力完全释放', 'positive');
+                gameState.round++;
+            }
+            
+            modal.style.display = 'flex';
+        }
+        
+        function closeHospitalModal() {
+            document.getElementById('hospital-modal').style.display = 'none';
+            if (!gameState.hasSTD) {
+                updateDisplay();
+            }
+        }
+        
+        // 聊天互动（100%解锁隐藏信息）
+        function chatWithPartner() {
+            if (gameState.gameOver) return;
+            
+            const partner = partners[currentPartner];
+            const randomEvent = Math.random();
+            let message, urgeChange, stressChange, type;
+            
+            // 100%概率揭示隐藏信息
+            if (!partner.revealed) {
+                partner.revealed = true;
+                partner.tags[0] = hiddenRealTags[partner.hiddenIndex];
+                addEvent('🔍 通过深入交流，你发现了她的真实情况：' + hiddenRealTags[partner.hiddenIndex], 'warning');
+            }
+            
+            if (randomEvent < 0.4) {
+                message = '愉快的聊天让你感到放松';
+                urgeChange = 2;
+                stressChange = -5;
+                type = 'positive';
+            } else if (randomEvent < 0.7) {
+                message = '普通的日常对话';
+                urgeChange = 3;
+                stressChange = 2;
+                type = 'neutral';
+            } else {
+                message = '谈话中产生了微妙的紧张感';
+                urgeChange = 5;
+                stressChange = 8;
+                type = 'negative';
+            }
+            
+            gameState.physiologicalUrge = Math.min(100, Math.max(0, gameState.physiologicalUrge + urgeChange));
+            gameState.psychologicalStress = Math.min(100, Math.max(0, gameState.psychologicalStress + stressChange));
+            
+            addEvent(message, type);
+            gameState.round++;
+            updateDisplay();
+        }
+        
+        // 选择行动
+        function chooseAction(action) {
+            if (gameState.gameOver) return;
+            
+            const partner = partners[currentPartner];
+            const actions = {
+                condomOral: { 
+                    urge: -2, 
+                    stress: 2, 
+                    message: '戴套口交',
+                    risk: 'safe',
+                    stat: 'condomOral'
+                },
+                condomSex: { 
+                    urge: -6, 
+                    stress: 5, 
+                    message: '戴套性交',
+                    risk: 'safe',
+                    stat: 'condomSex'
+                },
+                unprotectedOral: { 
+                    urge: -10, 
+                    stress: 2, 
+                    message: '无套口交',
+                    risk: 'risky',
+                    stat: 'unprotectedOral'
+                },
+                unprotectedSex: { 
+                    urge: -15, 
+                    stress: 30, 
+                    message: '无套性交',
+                    risk: 'risky',
+                    stat: 'unprotectedSex'
+                }
+            };
+            
+            const effect = actions[action];
+            if (effect) {
+                gameState.totalSexActs++;
+                gameState[effect.stat]++;
+                const sexMessage = sexMessages[Math.floor(Math.random() * sexMessages.length)];
+                
+                if (partner.hasSTD) {
+                    gameState.infectedSex++;
+                    addEvent(`🌙 ${sexMessage}`, 'neutral');
+                    
+                    if (effect.risk === 'risky') {
+                        if (!gameState.hasSTD) {
+                            gameState.hasSTD = true;
+                            gameState.infectionRound = gameState.round;
+                            addEvent('🦠 不幸的是，你可能已经感染了什么...', 'negative');
+                        }
+                    }
+                } else {
+                    gameState.healthySex++;
+                    addEvent(`🌙 ${sexMessage}`, 'positive');
+                }
+                
+                gameState.physiologicalUrge = Math.min(100, Math.max(0, gameState.physiologicalUrge + effect.urge));
+                gameState.psychologicalStress = Math.min(100, Math.max(0, gameState.psychologicalStress + effect.stress));
+                
+                currentPartner = (currentPartner + 1) % partners.length;
+                const nextPartner = partners[currentPartner];
+                nextPartner.quote = temptingQuotes[Math.floor(Math.random() * temptingQuotes.length)];
+                
+                addEvent(`邂逅了新的${nextPartner.name}`, 'neutral');
+                gameState.round++;
+                updateDisplay();
+            }
+        }
+        
+        // 更换伴侣
+        function changePartner() {
+            if (gameState.gameOver) return;
+            
+            currentPartner = (currentPartner + 1) % partners.length;
+            gameState.physiologicalUrge = Math.min(100, gameState.physiologicalUrge + 8);
+            gameState.rejected++;
+            
+            const partner = partners[currentPartner];
+            partner.quote = temptingQuotes[Math.floor(Math.random() * temptingQuotes.length)];
+            
+            addEvent(`更换了合作伙伴，遇到了${partner.name}`, 'neutral');
+            gameState.round++;
+            updateDisplay();
+        }
+        
+        // 随机事件系统
+        function triggerRandomEvent() {
+            if (Math.random() < 0.3 && gameState.round > 2) {
+                const events = [
+                    {
+                        message: '突然想起工作上的紧急事务',
+                        urge: -5,
+                        stress: 15,
+                        type: 'negative'
+                    },
+                    {
+                        message: '收到朋友的关心短信，心情好转',
+                        urge: 0,
+                        stress: -10,
+                        type: 'positive'
+                    }
+                ];
+                
+                const event = events[Math.floor(Math.random() * events.length)];
+                gameState.physiologicalUrge = Math.min(100, Math.max(0, gameState.physiologicalUrge + event.urge));
+                gameState.psychologicalStress = Math.min(100, Math.max(0, gameState.psychologicalStress + event.stress));
+                
+                addEvent(event.message, event.type);
+            }
+        }
+        
+        const originalUpdateDisplay = updateDisplay;
+        updateDisplay = function() {
+            originalUpdateDisplay();
+            if (!gameState.gameOver && gameState.round > 1) {
+                triggerRandomEvent();
+            }
+        };
+        
+        updateDisplay();
+    </script>
+</body>
+</html>
